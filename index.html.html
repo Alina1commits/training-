@@ -1,0 +1,197 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.mod{max-width:760px;margin:0 auto;padding:1.25rem 0;font-family:var(--font-sans)}
+.topbar{display:flex;align-items:center;gap:14px;margin-bottom:1.75rem}
+.mod-badge{font-size:12px;padding:4px 12px;border-radius:20px;background:#E6F1FB;color:#0C447C;font-weight:500;white-space:nowrap}
+.prog-wrap{flex:1;height:7px;background:var(--color-background-secondary);border-radius:4px;overflow:hidden}
+.prog-bar{height:100%;background:#378ADD;border-radius:4px;transition:width .4s}
+.slide-counter{font-size:13px;color:var(--color-text-secondary);white-space:nowrap}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:2rem;margin-bottom:1.25rem}
+.slide-tag{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.6rem}
+.slide-title{font-size:24px;font-weight:500;color:var(--color-text-primary);line-height:1.3;margin-bottom:1rem}
+.slide-body{font-size:16px;color:var(--color-text-secondary);line-height:1.85}
+.highlight{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem 1.25rem;margin:1.1rem 0;border-left:3px solid #378ADD;font-size:16px;color:var(--color-text-primary);line-height:1.75}
+.pt-list{list-style:none;margin:1rem 0}
+.pt-list li{display:flex;gap:12px;align-items:flex-start;font-size:16px;color:var(--color-text-primary);margin-bottom:.85rem;line-height:1.65}
+.pt-dot{width:8px;height:8px;border-radius:50%;background:#378ADD;flex-shrink:0;margin-top:8px}
+.do-dont{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:1rem 0}
+.do-box{background:#EAF3DE;border-radius:var(--border-radius-md);padding:1rem 1.25rem}
+.dont-box{background:#FCEBEB;border-radius:var(--border-radius-md);padding:1rem 1.25rem}
+.box-head{font-size:13px;font-weight:500;margin-bottom:.6rem}
+.do-box .box-head{color:#27500A}
+.dont-box .box-head{color:#791F1F}
+.do-box li,.dont-box li{font-size:15px;margin-bottom:.5rem;padding-left:14px;position:relative;list-style:none;line-height:1.55}
+.do-box li{color:#3B6D11}
+.dont-box li{color:#A32D2D}
+.do-box li::before{content:"";position:absolute;left:0;top:8px;width:7px;height:7px;border-radius:50%;background:#639922}
+.dont-box li::before{content:"";position:absolute;left:0;top:8px;width:7px;height:7px;border-radius:50%;background:#E24B4A}
+.steps-list{list-style:none;margin:1rem 0;counter-reset:step}
+.steps-list li{display:flex;gap:14px;align-items:flex-start;font-size:16px;color:var(--color-text-primary);margin-bottom:1rem;line-height:1.65}
+.step-num{width:28px;height:28px;border-radius:50%;background:#E6F1FB;color:#0C447C;font-size:13px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:1rem 0}
+.tool-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:1rem 1.25rem;border:0.5px solid var(--color-border-tertiary)}
+.tool-name{font-size:15px;font-weight:500;color:var(--color-text-primary);margin-bottom:.4rem}
+.tool-desc{font-size:14px;color:var(--color-text-secondary);line-height:1.6}
+.quiz-q{font-size:18px;font-weight:500;color:var(--color-text-primary);margin-bottom:1.25rem;line-height:1.5}
+.quiz-opt{display:block;width:100%;text-align:left;padding:.9rem 1.1rem;margin-bottom:.6rem;background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);font-size:15px;color:var(--color-text-primary);cursor:pointer;transition:background .15s;line-height:1.5}
+.quiz-opt:hover{background:var(--color-background-secondary)}
+.quiz-opt.correct{background:#EAF3DE;border-color:#639922;color:#27500A}
+.quiz-opt.wrong{background:#FCEBEB;border-color:#E24B4A;color:#791F1F}
+.quiz-opt.dimmed{opacity:.45;pointer-events:none}
+.feedback{font-size:14px;padding:.75rem 1rem;border-radius:var(--border-radius-md);margin:.6rem 0;line-height:1.7}
+.feedback.ok{background:#EAF3DE;color:#27500A}
+.feedback.bad{background:#FCEBEB;color:#791F1F}
+.navrow{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:.5rem}
+.navbtn{padding:.7rem 1.5rem;border-radius:var(--border-radius-md);font-size:15px;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary)}
+.navbtn:disabled{opacity:.3;cursor:not-allowed}
+.navbtn.primary{background:#378ADD;border-color:#378ADD;color:#fff}
+.result-card{text-align:center;padding:2.5rem 1.5rem}
+.result-score{font-size:56px;font-weight:500;margin:.5rem 0}
+.pass-badge{display:inline-block;padding:.5rem 1.5rem;border-radius:20px;font-size:14px;font-weight:500;margin:.75rem 0}
+.stat-row{display:flex;gap:12px;justify-content:center;margin:1.25rem 0;flex-wrap:wrap}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.9rem 1.5rem;text-align:center;min-width:90px}
+.stat-n{font-size:24px;font-weight:500;color:var(--color-text-primary)}
+.stat-l{font-size:12px;color:var(--color-text-secondary);margin-top:3px}
+</style>
+
+<div class="mod">
+<h2 class="sr-only">Remote work discipline and productivity — module 1 of 9, all staff</h2>
+<div class="topbar">
+  <span class="mod-badge">Module 1 of 9 — All staff</span>
+  <div class="prog-wrap"><div class="prog-bar" id="prog" style="width:0%"></div></div>
+  <span class="slide-counter" id="sc">1 / 15</span>
+</div>
+<div id="sw"></div>
+<div class="navrow">
+  <button class="navbtn" id="bb" onclick="nav(-1)" disabled>Back</button>
+  <button class="navbtn primary" id="bn" onclick="nav(1)">Next</button>
+</div>
+</div>
+
+<script>
+const slides=[
+{type:'content',tag:'Welcome',title:'Remote work discipline & productivity',body:'Working remotely gives you flexibility — but it puts the responsibility of discipline entirely on you. At Fountainhead, our clients depend on exhibition stands being delivered on time, with zero errors. This module covers everything you need to work professionally from India.',points:['Workday structure and daily routines','Time tracking with factoHR and MYZEN','Communication etiquette and daily reporting','Managing deadlines and applying for leave remotely']},
+{type:'content',tag:'Lesson 1 — Workday structure',title:'Your workday must have structure',body:'Without a commute or office, it is easy to lose track of time. A structured day is the single most important habit for any remote employee at Fountainhead.',highlight:'A stand that isn\'t ready on exhibition day cannot be delayed. Your remote schedule must reflect that urgency every single day.',points:['Start at the same time every day — be logged in and visible by 9:30 AM IST','Block 2–3 hours of uninterrupted deep work every morning','Take a proper lunch break — away from your screen','End your day clearly — update your tasks and log off at a fixed time']},
+{type:'dodont',tag:'Lesson 1 — Workday structure',title:'Daily habits — do this, not that',dos:['Log in by 9:30 AM IST every working day','Update your task board before you start the day','Block focus time and protect it from interruptions','End the day with a written status update on all active tasks'],donts:['Start work at random times with no routine','Leave tasks with no status — "doing it" is not a status','Work with WhatsApp and email notifications open all morning','Skip your end-of-day update and just go offline']},
+{type:'content',tag:'Lesson 2 — Time tracking',title:'Time tracking with factoHR & MYZEN',body:'Fountainhead uses factoHR for attendance and leave management, and MYZEN for daily work tracking. Both tools are mandatory — not optional. They protect you as much as they protect the company.',highlight:'Your factoHR login is your digital punch-in. Your MYZEN log is proof of your work. Keep both updated every single day.',points:['Log in to factoHR every morning as soon as you start work','Log out of factoHR when you finish — do not leave it running overnight','Update MYZEN with your tasks at least twice a day','Never ask a colleague to mark your attendance — this is a disciplinary issue']},
+{type:'tool',tag:'Lesson 2 — Time tracking',title:'factoHR — what you use it for',tools:[{name:'Daily attendance',desc:'Clock in every morning and clock out at end of day. This is your attendance record.'},{name:'Leave applications',desc:'Apply for all leaves through factoHR — casual, sick, planned. Do not tell your manager on WhatsApp first.'},{name:'Holiday calendar',desc:'Check approved holidays. Do not assume a day is a holiday.'},{name:'Payslips & history',desc:'Download your payslips and view your attendance history anytime.'}],note:'Never share your factoHR login with anyone. Your credentials are your responsibility.'},
+{type:'steps',tag:'Lesson 2 — Time tracking',title:'How to apply for leave in factoHR',steps:['Log in to factoHR on your browser or mobile app','Go to Leave Management → Apply Leave','Select leave type: Casual Leave, Sick Leave, or Earned Leave','Choose your start date and end date','Write a clear reason in the remarks field — e.g. "Personal work" or "Fever and rest"','Click Submit — your manager will receive a notification to approve or reject','Check the status under My Leave Requests — follow up if pending for more than 24 hours'],note:'Apply for planned leaves at least 3 days in advance. For sick leave, apply on the same day by 10 AM.'},
+{type:'content',tag:'Lesson 2 — Time tracking',title:'MYZEN — daily work logging',body:'MYZEN is where you log what you actually worked on each day. It is how your manager understands your workload and your output — especially since they cannot see you working.',highlight:'An empty MYZEN log at the end of the day is equivalent to saying you did nothing. Always log your tasks — even research, reviews, and calls count.',points:['Log tasks as you complete them — do not leave it to Friday','Each entry should include: task name, project name, time spent','If a task spans multiple days, log partial progress each day','Include meetings, client calls, and reviews as time entries','If you are blocked on a task, log it as blocked with a reason']},
+{type:'content',tag:'Lesson 3 — Communication',title:'Communication is your visibility',body:'In an office, your manager sees you working. Remotely, if you do not communicate, you are invisible. Proactive communication is what separates reliable remote employees from unreliable ones.',highlight:'Rule: Never go more than 3 hours without a status update on an active task. If you are stuck, say so immediately. Silence is the biggest red flag in remote work.',points:['Reply to messages within 2 hours during working hours','Use clear, specific subject lines — never send a blank "hi" on WhatsApp','Put important decisions and instructions in writing — not just on calls','Start messages with context: who you are, what project, what you need']},
+{type:'dodont',tag:'Lesson 3 — Communication',title:'Communication etiquette — do this, not that',dos:['Morning check-in: "Starting on X, Y, Z today — will update by 1 PM"','Reply with an ETA if you cannot complete a task now','Flag blockers with full context: what is blocked and why','End of day: "Completed X. Y is 80% done. Will finish tomorrow morning"'],donts:['Go silent for hours with no update on active work','Reply with just "OK" or "noted" with no action or timeline','Send voice notes for important instructions or decisions','Use informal language in client-facing emails or messages']},
+{type:'content',tag:'Lesson 4 — Daily reporting',title:'Daily reporting structure',body:'Every employee must follow a daily reporting format. This keeps the whole team aligned without needing constant check-in calls — which is the entire point of effective remote work.',highlight:'Your daily report is not bureaucracy. It is how your manager supports you, redistributes work fairly, and represents your output to leadership.',points:['Morning report by 10 AM: tasks planned for today, any blockers from yesterday','Evening report by 6:30 PM: tasks completed, tasks pending, anything you need tomorrow','Use the team\'s agreed channel — WhatsApp group, Slack, or email as assigned','Keep it short — 5 lines maximum. Bullet points only. No paragraphs.']},
+{type:'steps',tag:'Lesson 4 — Daily reporting',title:'Daily report format to follow',steps:['Morning — "Good morning. Today I am working on: [Task 1], [Task 2], [Task 3]. No blockers." or list any blockers clearly.','During the day — update your task board (Trello / spreadsheet / assigned tool) as you complete items.','If a deadline is at risk — message your manager immediately with: what is at risk, why, and what you need.','Evening — "EOD update: Completed [X]. [Y] is in progress — 70% done. [Z] is pending — blocked on client input. Logging off."','Friday — include a weekly summary: how many tasks completed, any pending items, anything needed next week.']},
+{type:'content',tag:'Lesson 5 — Deadlines',title:'Managing deadlines remotely',body:'Missing a deadline at Fountainhead does not just affect your KPIs — it can affect a client\'s exhibition, which may be a once-a-year event for them. Deadline management is a core professional skill.',highlight:'The moment you know a deadline is at risk — flag it. Not when it is due. Not after it is missed. The moment you know.',points:['Break every task into smaller milestones with their own mini-deadlines','If a task takes longer than expected, flag it at the 50% mark — not the 90% mark','Always confirm receipt of a brief or task assignment — do not assume you received it correctly','If you are waiting on someone else, follow up proactively — do not use it as an excuse after the fact','Use your task board to show real-time status: Not started / In progress / Blocked / Completed']},
+{type:'content',tag:'Lesson 6 — Leave & availability',title:'Leaves, absences & availability',body:'Working remotely means your team cannot see if you are absent. Any unplanned absence without communication creates a gap that affects real deliverables.',highlight:'An absent remote employee who does not inform anyone is the same as an abandoned task. Always communicate — even 10 minutes before.',points:['Apply for all planned leaves in factoHR at least 3 days in advance','For sick leave: apply in factoHR by 10 AM and message your manager directly','For half-days: inform your manager the evening before and update factoHR','If you have an emergency: message your manager immediately — then apply in factoHR when possible','Never go offline mid-day without informing someone on your team']},
+{type:'content',tag:'Lesson 7 — Professionalism',title:'Meetings, calls & remote professionalism',body:'Remote meetings are your face-to-face time. How you show up on a call reflects directly on Fountainhead — especially when clients are present.',points:['Join all calls 2 minutes early — never join late without a message','Camera on for all internal calls unless specifically agreed otherwise','Mute yourself when not speaking — background noise is disrespectful to everyone','Come prepared — read any agenda or brief before the call starts','Follow up every call with a written summary of decisions and actions agreed']},
+{type:'quiz',tag:'Knowledge check',questions:[
+{q:'You realise at 4 PM that you will miss a 6 PM deadline. What should you do?',opts:['Submit whatever you have at 6 PM and apologise','Message your manager immediately with what is delayed and why','Wait and see — maybe you will finish in time','Ask a colleague to submit on your behalf'],correct:1,exp:'Flag deadline risks the moment you know — not after they are missed. Your manager needs time to respond and inform the client if needed.'},
+{q:'Where do you apply for a planned leave at Fountainhead?',opts:['WhatsApp message to your manager','Email to HR','factoHR — Leave Management section','MYZEN task log'],correct:2,exp:'All leave applications must go through factoHR. WhatsApp messages alone are not official leave requests.'},
+{q:'You finish a call with your manager where an important decision is made. What do you do next?',opts:['Nothing — you both remember what was decided','Send a WhatsApp voice note summarising the call','Send a written follow-up with the decisions and actions agreed','Wait for your manager to send the summary'],correct:2,exp:'Always follow up calls with a written summary. This protects everyone and ensures no misunderstanding on actions.'},
+{q:'What is the correct format for your MYZEN daily log?',opts:['A summary paragraph at the end of the week','Task name, project name and time spent — logged as you complete tasks','Just mark tasks as done on the task board','A voice note to your manager at end of day'],correct:1,exp:'MYZEN requires specific entries per task including time spent. Log throughout the day — not all at once on Friday.'},
+{q:'It is 2 PM and you have not sent a morning report yet. What should you do?',opts:['Skip it — you will send the evening report instead','Send it now with a brief apology and your current task status','Wait for your manager to ask','Send a long explanation for why you were late'],correct:1,exp:'Send the report as soon as you realise — with your current status. Late is better than never. Keep it brief and professional.'},
+{q:'You are sick and cannot work today. What are the correct steps?',opts:['Message your manager on WhatsApp and rest','Apply in factoHR by 10 AM and message your manager directly','Tell a colleague to inform HR on your behalf','Do nothing — sick days do not need to be reported'],correct:1,exp:'Both steps are required: apply in factoHR officially AND inform your manager directly. Do this by 10 AM.'},
+{q:'How often should you update your task status in MYZEN?',opts:['Once a week on Friday','Only when a task is 100% complete','At least twice a day — and as you complete tasks','Whenever your manager asks you to'],correct:2,exp:'Log progress throughout the day. Partial progress counts. An empty log suggests no work was done — even if that is not true.'},
+{q:'What is the maximum time you should go without a status update on an active task?',opts:['End of the day','1 hour','3 hours','24 hours'],correct:2,exp:'The 3-hour rule applies to all active tasks. After 3 hours of silence on something urgent, your manager has no visibility and cannot help you.'},
+]}
+];
+
+let cur=0,qa={},qDone=false;
+
+function render(){
+  const s=slides[cur];
+  const pct=Math.round(((cur+1)/slides.length)*100);
+  document.getElementById('prog').style.width=pct+'%';
+  document.getElementById('sc').textContent=(cur+1)+' / '+slides.length;
+  document.getElementById('bb').disabled=cur===0;
+  document.getElementById('bn').textContent=cur===slides.length-1?'See results':'Next';
+
+  let html='';
+  if(s.type==='content'){
+    let pts=s.points?'<ul class="pt-list">'+s.points.map(p=>`<li><span class="pt-dot"></span><span>${p}</span></li>`).join('')+'</ul>':'';
+    let hl=s.highlight?`<div class="highlight">${s.highlight}</div>`:'';
+    html=`<div class="card"><div class="slide-tag">${s.tag}</div><div class="slide-title">${s.title}</div><div class="slide-body">${s.body}</div>${hl}${pts}</div>`;
+  } else if(s.type==='dodont'){
+    let dos=s.dos.map(d=>`<li>${d}</li>`).join('');
+    let donts=s.donts.map(d=>`<li>${d}</li>`).join('');
+    html=`<div class="card"><div class="slide-tag">${s.tag}</div><div class="slide-title">${s.title}</div><div class="do-dont"><div class="do-box"><div class="box-head">Do this</div><ul>${dos}</ul></div><div class="dont-box"><div class="box-head">Not this</div><ul>${donts}</ul></div></div></div>`;
+  } else if(s.type==='tool'){
+    let tcards=s.tools.map(t=>`<div class="tool-card"><div class="tool-name">${t.name}</div><div class="tool-desc">${t.desc}</div></div>`).join('');
+    let note=s.note?`<div class="highlight">${s.note}</div>`:'';
+    html=`<div class="card"><div class="slide-tag">${s.tag}</div><div class="slide-title">${s.title}</div><div class="tool-grid">${tcards}</div>${note}</div>`;
+  } else if(s.type==='steps'){
+    let items=s.steps.map((st,i)=>`<li><span class="step-num">${i+1}</span><span>${st}</span></li>`).join('');
+    let note=s.note?`<div class="highlight" style="margin-top:1rem">${s.note}</div>`:'';
+    html=`<div class="card"><div class="slide-tag">${s.tag}</div><div class="slide-title">${s.title}</div><ol class="steps-list">${items}</ol>${note}</div>`;
+  } else if(s.type==='quiz'){
+    const qs=s.questions;
+    const answered=Object.keys(qa).length;
+    const qIdx=qDone?qs.length-1:Math.min(answered,qs.length-1);
+    const q=qs[qIdx];
+    const isAnswered=qa[qIdx]!==undefined;
+    const chosen=qa[qIdx];
+    let opts=q.opts.map((o,i)=>{
+      let cls='quiz-opt';
+      if(isAnswered){if(i===q.correct)cls+=' correct';else if(i===chosen)cls+=' wrong';else cls+=' dimmed';}
+      return `<button class="${cls}" onclick="answer(${qIdx},${i})" ${isAnswered?'disabled':''}>${o}</button>`;
+    }).join('');
+    let fb=isAnswered?`<div class="feedback ${chosen===q.correct?'ok':'bad'}">${chosen===q.correct?'Correct — ':'Incorrect — '}${q.exp}</div>`:'';
+    if(isAnswered&&!qDone){
+      const allDone=Object.keys(qa).length===qs.length;
+      if(allDone){qDone=true;document.getElementById('bn').textContent='See results';}
+      else document.getElementById('bn').textContent='Next question';
+    }
+    html=`<div class="card"><div class="slide-tag">${s.tag} — question ${qIdx+1} of ${qs.length}</div><div class="quiz-q">${q.q}</div>${opts}${fb}</div>`;
+  }
+  document.getElementById('sw').innerHTML=html;
+}
+
+function answer(qi,chosen){qa[qi]=chosen;render();}
+
+function nav(dir){
+  const s=slides[cur];
+  if(dir===1&&s.type==='quiz'&&!qDone){
+    if(qa[Object.keys(qa).length]===undefined)return;
+  }
+  if(dir===1&&cur===slides.length-1){showResult();return;}
+  cur=Math.max(0,Math.min(slides.length-1,cur+dir));
+  if(dir===1&&slides[cur].type==='quiz'&&qDone){showResult();return;}
+  render();
+}
+
+function showResult(){
+  const qs=slides.find(s=>s.type==='quiz').questions;
+  let correct=0;
+  qs.forEach((q,i)=>{if(qa[i]===q.correct)correct++;});
+  const pct=Math.round((correct/qs.length)*100);
+  const pass=pct>=80;
+  document.getElementById('bb').style.display='none';
+  document.getElementById('bn').style.display='none';
+  document.getElementById('prog').style.width='100%';
+  document.getElementById('sc').textContent='Complete';
+  document.getElementById('sw').innerHTML=`<div class="card result-card">
+    <div class="slide-tag">Module 1 complete</div>
+    <div class="result-score" style="color:${pass?'#1D9E75':'#E24B4A'}">${pct}%</div>
+    <div class="slide-body" style="margin-bottom:.5rem">${correct} of ${qs.length} questions correct</div>
+    <span class="pass-badge" style="background:${pass?'#EAF3DE':'#FCEBEB'};color:${pass?'#27500A':'#791F1F'}">${pass?'Passed — well done!':'Not passed — please review and retry'}</span>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-n">${qs.length}</div><div class="stat-l">Questions</div></div>
+      <div class="stat"><div class="stat-n">${correct}</div><div class="stat-l">Correct</div></div>
+      <div class="stat"><div class="stat-n">80%</div><div class="stat-l">Pass mark</div></div>
+    </div>
+    <p style="font-size:15px;color:var(--color-text-secondary);margin-top:1rem;line-height:1.75">${pass?'You have completed Module 1. Your department-specific training module will be shared with you separately by HR.':'Please review the lessons on communication, factoHR and deadline management, then retake the quiz. You need 80% or above to pass.'}</p>
+    ${!pass?'<button class="navbtn primary" style="margin-top:1.25rem" onclick="retry()">Retry quiz</button>':''}
+  </div>`;
+}
+
+function retry(){
+  qa={};qDone=false;
+  cur=slides.findIndex(s=>s.type==='quiz');
+  document.getElementById('bb').style.display='';
+  document.getElementById('bn').style.display='';
+  render();
+}
+
+render();
+</script>
