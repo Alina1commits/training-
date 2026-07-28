@@ -68,6 +68,28 @@ ROOM_LINE_RULES: dict[str, tuple[str, str]] = {
 }
 
 
+# Words that reliably signal a graphic/branding treatment (Signing section)
+# rather than a structural/build element (Stand section). Deliberately a
+# short, high-precision list -- when in doubt, Stand is the safer default.
+_SIGNING_KEYWORDS = ("vinyl", "logo", "letter", "graphic", "backlit", "print")
+
+
+def _normalize_label(label: str) -> str:
+    label = label.strip()
+    return label[0].upper() + label[1:] if label else label
+
+
+def _generic_fallback_line(label: str) -> tuple[str, str]:
+    """For a callout label with no entry in CALLOUT_RULES -- i.e. any client
+    whose design vocabulary doesn't match Milan's -- still produce a
+    reasonable line instead of silently dropping it.
+    """
+    is_signing = any(kw in label.lower() for kw in _SIGNING_KEYWORDS)
+    section = "Signing" if is_signing else "Stand"
+    suffix = "as per dimensions" if is_signing else "as per design"
+    return section, f"{_normalize_label(label)} -- {suffix}"
+
+
 def _meeting_room_qty(rooms: dict) -> int:
     n = 0
     if rooms.get("Meeting room 1"):
@@ -115,23 +137,25 @@ def build_deterministic_lines(extraction: ExtractionResult) -> dict[str, list[di
             "dims")
 
     # --- Stand & Signing: callout-derived ------------------------------------
-    seen_signing_logo_count = extraction.callouts.count("3D LIT LOGO")
+    rules_by_upper = {k.upper(): v for k, v in CALLOUT_RULES.items()}
+    seen_signing_logo_count = sum(1 for l in extraction.callouts if l.upper() == "3D LIT LOGO")
     handled_3d_logo = False
     for label in extraction.callouts:
-        rules = CALLOUT_RULES.get(label)
-        if not rules:
-            continue
-        for section, phrase in rules:
-            if label == "3D LIT LOGO":
-                if handled_3d_logo:
+        rules = rules_by_upper.get(label.upper())
+        if rules:
+            for section, phrase in rules:
+                if label.upper() == "3D LIT LOGO":
+                    if handled_3d_logo:
+                        continue
+                    handled_3d_logo = True
+                    add(section, f"{seen_signing_logo_count},0", phrase, "callout")
                     continue
-                handled_3d_logo = True
-                qty = f"{seen_signing_logo_count},0"
-                add(section, qty, phrase, "callout")
-                continue
-            if section == "Floor":
-                continue  # handled above
-            add(section, "1,0", phrase, "callout")
+                if section == "Floor":
+                    continue  # handled above
+                add(section, "1,0", phrase, "callout")
+        else:
+            section, phrase = _generic_fallback_line(label)
+            add(section, "1,0", phrase, "callout-generic")
 
     # --- Stand: room-derived ---------------------------------------------
     meeting_qty = _meeting_room_qty(extraction.rooms)

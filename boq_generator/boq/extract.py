@@ -53,11 +53,15 @@ ROOM_KEYWORDS = [
     ("VIP LOUNGE", "VIP lounge"),
 ]
 
+# Unit suffix varies by deck: "MTR" (IFF/Milan), plain "M"/"m" (Ambadi/
+# Heimtextil), occasionally "MT" or "Meter(s)" -- accept them all.
+_UNIT = r"(?:MTRS?|MT|METERS?|M)\b"
+
 DIM_PATTERNS = {
-    "stand_size": re.compile(r"STAND\s*SIZE\s*:?\s*([0-9.]+\s*X\s*[0-9.]+)\s*MTR", re.I),
+    "stand_size": re.compile(rf"STAND\s*SIZE\s*:?\s*([0-9.]+\s*X\s*[0-9.]+)\s*{_UNIT}", re.I),
     "stand_area": re.compile(r"STAND\s*AREA\s*:?\s*([0-9.]+)\s*S?QM", re.I),
-    "wall_height": re.compile(r"WALL\s*HEIGHT\s*:?\s*([0-9.]+)\s*MTR", re.I),
-    "total_height": re.compile(r"TOTAL\s*HEIGHT\s*:?\s*([0-9.]+)\s*MTR", re.I),
+    "wall_height": re.compile(rf"WALL\s*HEIGHT\s*:?\s*([0-9.]+)\s*{_UNIT}", re.I),
+    "total_height": re.compile(rf"TOTAL\s*HEIGHT\s*:?\s*([0-9.]+)\s*{_UNIT}", re.I),
 }
 
 QTY_LINE_RE = re.compile(r"^\s*(\d+[.,]\d+)\s+(.+?)\s*$")
@@ -183,15 +187,22 @@ class SpecExtractor:
 
     # -- structured parsing ---------------------------------------------------
     def parse_dimensions(self) -> Dimensions:
-        page = self.find_dims_page()
         dims = Dimensions()
-        if not page:
-            return dims
-        text = self._page_text_sorted(page)
-        for field_name, pattern in DIM_PATTERNS.items():
-            m = pattern.search(text)
-            if m:
-                setattr(dims, field_name, m.group(1).strip())
+        page = self.find_dims_page()
+        if page:
+            text = self._page_text_sorted(page)
+            for field_name, pattern in DIM_PATTERNS.items():
+                m = pattern.search(text)
+                if m:
+                    setattr(dims, field_name, m.group(1).strip())
+
+        # Some decks flatten this footer into a picture -- no page has it as
+        # real text at all. Fall back to OCR-reading the info box directly.
+        if not any([dims.stand_size, dims.stand_area, dims.wall_height, dims.total_height]):
+            from boq.ocr_cover import ocr_dimensions_fallback  # local import: optional dependency
+            ocr_dims = ocr_dimensions_fallback(self.pdf_path, page_no=min(2, len(self.doc)))
+            for field_name, value in ocr_dims.items():
+                setattr(dims, field_name, value)
         return dims
 
     def parse_specs_list(self) -> tuple[dict, int | None]:
@@ -232,19 +243,27 @@ class SpecExtractor:
             line = re.sub(r"\s+", " ", raw_line).strip()
             if not line:
                 continue
+            # the page's own "Specifications" heading sometimes lands on the
+            # same sorted line as a nearby label -- strip it, keep the rest
+            line = re.sub(r"\bSpecificat(?:i)?ons?\b", "", line, flags=re.I).strip()
+            if not line:
+                continue
             if any(noise in line.upper() for noise in FOOTER_NOISE):
                 continue
             if any(pattern.search(line) for pattern in DIM_PATTERNS.values()):
                 continue
-            if re.match(r"^[0-9.]+\s*(MTR|SQM)$", line, re.I):
-                continue
-            # keep only genuinely label-like lines (mostly uppercase letters)
             letters = re.sub(r"[^A-Za-z]", "", line)
-            if not letters:
+            if len(letters) < 2:
                 continue
-            upper_ratio = sum(1 for c in letters if c.isupper()) / len(letters)
-            if upper_ratio > 0.8:
-                labels.append(line)
+            if re.fullmatch(r"[0-9.\sxXmM:–-]+", line):
+                continue
+            # callout labels are short phrases, not the boilerplate sentences
+            # that also live on these pages -- length is a reliable enough
+            # filter regardless of whether the deck writes labels in ALL
+            # CAPS (Milan/IFF) or Title Case (other clients).
+            if len(line) > 45:
+                continue
+            labels.append(line)
         return labels, page
 
     def parse_rooms(self) -> tuple[dict, int | None]:

@@ -28,7 +28,7 @@ except ImportError as exc:  # pragma: no cover -- exercised when deps missing
     Image = None
     _OCR_IMPORT_ERROR = exc
 
-from boq.extract import CITY_COUNTRY
+from boq.extract import CITY_COUNTRY, DIM_PATTERNS
 
 MONTHS = ("January", "February", "March", "April", "May", "June", "July",
           "August", "September", "October", "November", "December")
@@ -116,8 +116,11 @@ def _parse_banner_text(text: str) -> tuple[str, str, str]:
     trade_show = ""
     for line in lines:
         letters_only = re.sub(r"[^A-Za-z]", "", line)
-        if 3 <= len(letters_only) <= 10 and letters_only.isupper():
-            trade_show = letters_only
+        # trade-show branding is written ALL CAPS (CPHI) just as often as
+        # lowercase (heimtextil) -- don't require a specific casing style,
+        # just something short and clearly a single word/name.
+        if 3 <= len(letters_only) <= 15 and letters_only.isalpha():
+            trade_show = letters_only.upper() if letters_only.isupper() else letters_only.capitalize()
             break
 
     date_m = re.search(rf"(\d{{1,2}})\s*[-–]\s*(\d{{1,2}})\s+({_MONTH_RE})\s+((?:19|20)\d{{2}})", text)
@@ -135,3 +138,36 @@ def _parse_banner_text(text: str) -> tuple[str, str, str]:
                 break
 
     return trade_show, city, dates
+
+
+def ocr_dimensions_fallback(pdf_path: str, page_no: int = 2, dpi: int = 200) -> dict:
+    """Some decks bake the STAND SIZE/AREA/WALL HEIGHT/TOTAL HEIGHT footer
+    into a flattened image rather than real text (no page in the PDF has it
+    as extractable text at all). Crop the footer's info box -- bottom-right
+    corner, consistent across these decks -- from any content page and OCR
+    it directly. Returns {} if OCR isn't available or nothing is found.
+    """
+    if not ocr_available():
+        return {}
+    try:
+        doc = fitz.open(pdf_path)
+        page_no = max(1, min(page_no, len(doc)))
+        pix = doc[page_no - 1].get_pixmap(dpi=dpi)
+        doc.close()
+        img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+    except Exception:  # noqa: BLE001
+        return {}
+
+    w, h = img.size
+    crop = img.crop((int(w * 0.72), int(h * 0.83), w, int(h * 0.99)))
+    try:
+        text = pytesseract.image_to_string(crop)
+    except Exception:  # noqa: BLE001
+        return {}
+
+    result = {}
+    for field_name, pattern in DIM_PATTERNS.items():
+        m = pattern.search(text)
+        if m:
+            result[field_name] = m.group(1).strip()
+    return result
