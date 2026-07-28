@@ -17,6 +17,8 @@ from boq.assemble import build_sections, default_header_fields, show_start_date
 from boq.ai_narrative import suggest_additional_lines
 from boq.docx_builder import build_boq_docx
 
+APP_VERSION = "v3 (2026-07-28: filename parsing fixes, letterhead background)"
+
 BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_DIR = BASE_DIR / "uploads"
 OUTPUT_DIR = BASE_DIR / "output"
@@ -75,7 +77,7 @@ def _text_to_items(text: str) -> list[dict]:
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("upload.html")
+    return render_template("upload.html", app_version=APP_VERSION)
 
 
 @app.route("/upload", methods=["POST"])
@@ -158,6 +160,7 @@ def review(job_id):
         selected_pages=job["selected_pages"],
         ai_note=job["ai_note"],
         original_filename=job["original_filename"],
+        app_version=APP_VERSION,
     )
 
 

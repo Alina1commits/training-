@@ -8,6 +8,7 @@
 <body>
   <div class="wrap">
     <h1>Review &amp; edit</h1>
+    <p class="small muted" style="margin-top:-.5rem">{{ app_version }}</p>
     <p class="muted">Source: {{ original_filename }}. Edit anything below, then generate the .docx.</p>
 
     {% with messages = get_flashed_messages() %}

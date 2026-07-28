@@ -8,6 +8,7 @@
 <body>
   <div class="wrap narrow">
     <h1>BOQ Generator</h1>
+    <p class="small muted" style="margin-top:-.5rem">{{ app_version }}</p>
     <p class="muted">Upload a stand specification PDF (renders + specs list + callout page + floor plan). You'll get a chance to review and edit everything before the final .docx is generated.</p>
 
     {% with messages = get_flashed_messages() %}
