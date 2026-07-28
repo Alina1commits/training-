@@ -309,6 +309,22 @@ class SpecExtractor:
             days_m = re.search(r"(\d{1,2})\s*[-–]\s*(\d{1,2})", date_part)
             if month_m and days_m:
                 meta.show_dates = f"{days_m.group(1)}-{days_m.group(2)} {month_m.group(1).title()} {year_m.group(0) if show_part and year_m else ''}".strip()
+
+        # OCR on the cover page's logo/banner images is more reliable than
+        # guessing from the file name (it works no matter how the PDF was
+        # renamed) -- use it to fill in or correct whatever it can read.
+        from boq.ocr_cover import extract_cover_via_ocr  # local import: optional dependency
+        ocr = extract_cover_via_ocr(self.pdf_path)
+        if ocr.company:
+            meta.company = ocr.company
+            meta.project = ocr.company
+        if ocr.trade_show:
+            meta.trade_show = ocr.trade_show
+        if ocr.show_dates:
+            meta.show_dates = ocr.show_dates
+        if ocr.venue:
+            meta.venue = ocr.venue
+
         return meta
 
     def render_page_png(self, page_no: int, out_path: str, dpi: int = 150) -> str:
