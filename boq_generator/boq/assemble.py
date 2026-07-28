@@ -66,7 +66,7 @@ def build_sections(extraction: ExtractionResult, ai_suggestions: dict | None = N
 
 def default_header_fields(extraction: ExtractionResult) -> dict:
     return {
-        "client": "",
+        "client": extraction.cover.company or extraction.cover.project,
         "contact_person": "",
         "trade_show": extraction.cover.trade_show,
         "email": "",

@@ -88,6 +88,7 @@ class SpecItem:
 @dataclass
 class CoverMeta:
     project: str = ""
+    company: str = ""
     trade_show: str = ""
     show_dates: str = ""
     venue: str = ""
@@ -289,6 +290,7 @@ class SpecExtractor:
                 show_part = part
 
         if project_part:
+            meta.company = project_part
             meta.project = project_part.split()[0]
         if show_part:
             year_m = re.search(r"(19|20)\d{2}", show_part)
