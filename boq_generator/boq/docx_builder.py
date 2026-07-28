@@ -5,13 +5,14 @@ then Fountainhead's fixed legal boilerplate and a signature block.
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 from docx import Document
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from docx.shared import Cm, Pt, RGBColor
+from docx.shared import Cm, Emu, Pt, RGBColor
 
 from boq import legal_text
 
@@ -21,16 +22,8 @@ SECTION_ORDER = [
     "8 AV/VIDEO",
 ]
 
-HEADER_SHADE = "D9E2F3"
-
-
-def _shade_cell(cell, hex_color: str):
-    tcPr = cell._tc.get_or_add_tcPr()
-    shd = OxmlElement("w:shd")
-    shd.set(qn("w:val"), "clear")
-    shd.set(qn("w:color"), "auto")
-    shd.set(qn("w:fill"), hex_color)
-    tcPr.append(shd)
+ACCENT_BLUE = "0070C0"  # matches BOQ_expected.docx's title/heading color exactly
+LETTERHEAD_BG = Path(__file__).resolve().parent / "assets" / "letterhead_bg.png"
 
 
 def _set_cell_borders(cell, sz="4", color="999999"):
@@ -52,6 +45,64 @@ def _bold_run(paragraph, text, size=11, color=None):
     if color:
         run.font.color.rgb = RGBColor.from_string(color)
     return run
+
+
+def _add_page_background(doc, image_path: Path):
+    """Repeat the Fountainhead letterhead graphic at the bottom of every
+    page: added to the header as a floating picture, anchored to the page,
+    positioned behind the text so it never displaces content.
+    """
+    if not image_path.exists():
+        return
+    section = doc.sections[0]
+    header = section.header
+    header.is_linked_to_previous = False
+    paragraph = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+    run = paragraph.add_run()
+    run.add_picture(str(image_path), width=section.page_width)
+
+    drawing = run._element.find(qn("w:drawing"))
+    inline = drawing.find(qn("wp:inline"))
+    extent = inline.find(qn("wp:extent"))
+    docPr = inline.find(qn("wp:docPr"))
+    graphic = inline.find(qn("a:graphic"))
+    cy = int(extent.get("cy"))
+
+    anchor = OxmlElement("wp:anchor")
+    for attr, val in {
+        "distT": "0", "distB": "0", "distL": "0", "distR": "0",
+        "simplePos": "0", "relativeHeight": "1", "behindDoc": "1",
+        "locked": "0", "layoutInCell": "1", "allowOverlap": "1",
+    }.items():
+        anchor.set(attr, val)
+
+    simple_pos = OxmlElement("wp:simplePos")
+    simple_pos.set("x", "0")
+    simple_pos.set("y", "0")
+
+    position_h = OxmlElement("wp:positionH")
+    position_h.set("relativeFrom", "page")
+    offset_h = OxmlElement("wp:posOffset")
+    offset_h.text = "0"
+    position_h.append(offset_h)
+
+    position_v = OxmlElement("wp:positionV")
+    position_v.set("relativeFrom", "page")
+    offset_v = OxmlElement("wp:posOffset")
+    offset_v.text = str(int(section.page_height) - cy)
+    position_v.append(offset_v)
+
+    wrap_none = OxmlElement("wp:wrapNone")
+
+    anchor.append(simple_pos)
+    anchor.append(position_h)
+    anchor.append(position_v)
+    anchor.append(extent)
+    anchor.append(wrap_none)
+    anchor.append(docPr)
+    anchor.append(graphic)
+
+    drawing.replace(inline, anchor)
 
 
 def _add_header_field_table(doc, header_fields: dict):
@@ -107,7 +158,6 @@ def _add_specs_table(doc, sections: dict[str, list[dict]]):
         p = header_row.cells[0].paragraphs[0]
         _bold_run(p, section_name, size=11)
         for c in header_row.cells:
-            _shade_cell(c, HEADER_SHADE)
             _set_cell_borders(c)
 
         items = sections.get(section_name, [])
@@ -150,6 +200,8 @@ def build_boq_docx(
     style.font.name = "Calibri"
     style.font.size = Pt(10)
 
+    _add_page_background(doc, LETTERHEAD_BG)
+
     _add_header_field_table(doc, header_fields)
     doc.add_paragraph()
 
@@ -158,7 +210,7 @@ def build_boq_docx(
     area = header_fields.get("area", "")
     trade_show = header_fields.get("trade_show", "")
     venue = header_fields.get("venue", "")
-    _bold_run(title, f"Total stand price EUR | {area} sqm | {trade_show} | {venue}", size=12)
+    _bold_run(title, f"Total stand price EUR | {area} sqm | {trade_show} | {venue}", size=12, color=ACCENT_BLUE)
 
     doc.add_paragraph()
     if image_paths:
@@ -166,7 +218,7 @@ def build_boq_docx(
     doc.add_paragraph()
 
     spec_heading = doc.add_paragraph()
-    run = _bold_run(spec_heading, "Specifications", size=13)
+    run = _bold_run(spec_heading, "Specifications", size=13, color=ACCENT_BLUE)
     run.underline = True
 
     _add_specs_table(doc, sections)
