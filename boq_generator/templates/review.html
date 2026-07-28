@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Review BOQ -- {{ original_filename }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap">
+    <h1>Review &amp; edit</h1>
+    <p class="muted">Source: {{ original_filename }}. Edit anything below, then generate the .docx.</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}<div class="flash">{% for m in messages %}<p>{{ m }}</p>{% endfor %}</div>{% endif %}
+    {% endwith %}
+    {% if ai_note %}<div class="note">{{ ai_note }}</div>{% endif %}
+
+    <form method="post" id="reviewForm">
+      <div class="card">
+        <h2>Header fields</h2>
+        <div class="grid2">
+          <label>Client<input name="client" value="{{ header.client }}"></label>
+          <label>Contact Person<input name="contact_person" value="{{ header.contact_person }}"></label>
+          <label>Trade Show<input name="trade_show" value="{{ header.trade_show }}"></label>
+          <label>Email<input name="email" value="{{ header.email }}"></label>
+          <label>Show Dates<input name="show_dates" value="{{ header.show_dates }}"></label>
+          <label>Document Date<input name="doc_date" value="{{ header.doc_date }}"></label>
+          <label>Venue<input name="venue" value="{{ header.venue }}"></label>
+          <label>Project<input name="project" value="{{ header.project }}"></label>
+          <label>Area (sqm)<input name="area" value="{{ header.area }}"></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Hero images (pick exactly 3 -- default is pages 4, 5, 6)</h2>
+        <div class="thumbs">
+          {% for p in candidate_pages %}
+          <label class="thumb">
+            <input type="checkbox" name="hero_pages" value="{{ p }}" {% if p in selected_pages %}checked{% endif %}>
+            <img src="{{ thumbs[p] }}" alt="page {{ p }}">
+            <span>page {{ p }}</span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Specifications</h2>
+        <p class="muted small">One line per item: <code>qty | description</code>. Add, edit or delete lines freely.</p>
+        {% for key in section_keys %}
+        <div class="section-block">
+          <h3>{{ key }}</h3>
+          <textarea name="section__{{ key }}" rows="{{ 4 if key in ('1 Floor','7 Installation | Dismantling | Transport') else 8 }}">{{ sections_text[key] }}</textarea>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="actions">
+        <button type="submit" formaction="{{ url_for('ai_suggest', job_id=job_id) }}" class="secondary">
+          Add AI-suggested lines (Floor / Stand / Signing)
+        </button>
+        <button type="submit" formaction="{{ url_for('generate', job_id=job_id) }}">
+          Generate BOQ .docx
+        </button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BOQ Generator</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="wrap narrow">
+    <h1>BOQ Generator</h1>
+    <p class="muted">Upload a stand specification PDF (renders + specs list + callout page + floor plan). You'll get a chance to review and edit everything before the final .docx is generated.</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash">{% for m in messages %}<p>{{ m }}</p>{% endfor %}</div>
+      {% endif %}
+    {% endwith %}
+
+    <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" class="card">
+      <label for="spec_pdf">Specification PDF</label>
+      <input type="file" id="spec_pdf" name="spec_pdf" accept="application/pdf" required>
+      <button type="submit">Extract &amp; Review</button>
+    </form>
+
+    <div class="card muted small">
+      <strong>Note:</strong> the "Floor" / "Stand" / "Signing" sections include an
+      optional AI-assisted step (needs <code>ANTHROPIC_API_KEY</code> set on the
+      server) that looks at the actual render images to draft extra lines the
+      deterministic parser can't infer on its own. You'll be able to trigger it,
+      review its output, and edit or delete anything before generating the
+      final document.
+    </div>
+  </div>
+</body>
+</html>
