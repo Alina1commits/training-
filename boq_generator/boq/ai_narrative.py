@@ -1,11 +1,11 @@
 """AI-assisted drafting of the BOQ lines that have no literal source text in
 the spec PDF -- things a designer wrote freehand ("Walls will have roll
 paint finish", "Semi-open lounge area with wooden partition..."). We show
-Claude the actual render images plus everything the deterministic extractor
-already found, and ask it only to ADD lines that are visually grounded and
-not already covered.
+the model the actual render images plus everything the deterministic
+extractor already found, and ask it only to ADD lines that are visually
+grounded and not already covered.
 
-Requires ANTHROPIC_API_KEY in the environment. If it's missing, or the call
+Requires OPENAI_API_KEY in the environment. If it's missing, or the call
 fails for any reason, callers get an empty suggestion list plus an error
 string -- the rest of the BOQ (which is fully deterministic) still works.
 """
@@ -16,7 +16,7 @@ import json
 import os
 import re
 
-DEFAULT_MODEL = os.environ.get("BOQ_AI_MODEL", "claude-sonnet-5")
+DEFAULT_MODEL = os.environ.get("BOQ_AI_MODEL", "gpt-5-nano")
 
 SYSTEM_PROMPT = """You are assisting a exhibition-stand contractor (Fountainhead) in \
 drafting a Bill of Quantities (BOQ) for a trade-show stand, from a client-facing \
@@ -54,10 +54,10 @@ correct lines are better than more, speculative ones.
 """
 
 
-def _b64_image(path: str) -> dict:
+def _b64_image_data_url(path: str) -> str:
     with open(path, "rb") as f:
         data = base64.standard_b64encode(f.read()).decode("ascii")
-    return {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": data}}
+    return f"data:image/png;base64,{data}"
 
 
 def _hints_text(extraction, deterministic_lines: dict) -> str:
@@ -78,31 +78,34 @@ def _hints_text(extraction, deterministic_lines: dict) -> str:
 
 def suggest_additional_lines(extraction, deterministic_lines: dict, image_paths: list[str]) -> tuple[dict, str | None]:
     """Returns (suggestions_dict, error). suggestions_dict is {} on failure."""
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
+    api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        return {}, "ANTHROPIC_API_KEY is not set -- skipping AI-assisted suggestions."
+        return {}, "OPENAI_API_KEY is not set -- skipping AI-assisted suggestions."
 
     try:
-        import anthropic
+        import openai
     except ImportError:
-        return {}, "the 'anthropic' package is not installed -- skipping AI-assisted suggestions."
+        return {}, "the 'openai' package is not installed -- skipping AI-assisted suggestions."
 
     content = [{"type": "text", "text": _hints_text(extraction, deterministic_lines)}]
     for p in image_paths:
         try:
-            content.append(_b64_image(p))
+            content.append({"type": "image_url", "image_url": {"url": _b64_image_data_url(p)}})
         except OSError:
             continue
 
     try:
-        client = anthropic.Anthropic(api_key=api_key)
-        resp = client.messages.create(
+        client = openai.OpenAI(api_key=api_key)
+        resp = client.chat.completions.create(
             model=DEFAULT_MODEL,
-            max_tokens=2000,
-            system=SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": content}],
+            max_completion_tokens=2000,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": content},
+            ],
         )
-        text = "".join(block.text for block in resp.content if getattr(block, "type", "") == "text")
+        text = resp.choices[0].message.content or ""
     except Exception as exc:  # noqa: BLE001 -- surface any failure as a soft error
         return {}, f"AI suggestion call failed: {exc}"
 
