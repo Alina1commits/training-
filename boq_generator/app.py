@@ -17,7 +17,7 @@ from boq.assemble import build_sections, default_header_fields, show_start_date
 from boq.ai_narrative import suggest_additional_lines
 from boq.docx_builder import build_boq_docx
 
-APP_VERSION = "v3 (2026-07-28: filename parsing fixes, letterhead background)"
+APP_VERSION = "v4 (2026-07-28: OCR-read Client/Trade Show/Venue, left-aligned title)"
 
 BASE_DIR = Path(__file__).resolve().parent
 UPLOAD_DIR = BASE_DIR / "uploads"
