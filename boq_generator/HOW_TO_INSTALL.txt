@@ -1,0 +1,67 @@
+BOQ GENERATOR - SETUP GUIDE
+============================
+Follow these steps once. After that, you just do steps 5-6 each time you
+want to use it.
+
+1) INSTALL PYTHON
+   - Go to: https://www.python.org/downloads/
+   - Click the big "Download Python" button and run the installer.
+   - Follow the install wizard (default options are fine).
+
+2) UNZIP THIS FOLDER
+   - Right-click "BOQ_Generator_software.zip" -> "Extract All..." -> Extract.
+   - You'll get a folder called "boq_generator" - open it so you can see
+     files like "app.py" and "requirements.txt" inside.
+
+3) OPEN A COMMAND WINDOW IN THAT FOLDER
+   - With the "boq_generator" folder open in File Explorer, click once in
+     the address bar at the very top (where the folder path is shown).
+   - Type: cmd
+   - Press Enter. A black window opens, already pointed at this folder.
+
+4) INSTALL THE REQUIRED PIECES (only needed the first time)
+   In that black window, type this and press Enter:
+
+       py -m pip install -r requirements.txt
+
+   Wait for it to finish (a minute or two). If "py" doesn't work, try
+   "python" instead: python -m pip install -r requirements.txt
+
+5) START THE SOFTWARE (do this every time you want to use it)
+   In the same black window, type:
+
+       py app.py
+
+   Leave this window open the whole time you're using it - closing it
+   shuts the software down.
+
+6) USE IT
+   Open Chrome or Edge and go to:
+
+       http://127.0.0.1:5000
+
+   Upload your specification PDF, review the details on the next page
+   (fill in anything left blank, like Client name / Contact Person /
+   Email), then click "Generate BOQ .docx" to download the finished file.
+
+OPTIONAL: AUTO-FILL CLIENT / TRADE SHOW / VENUE
+   By default those fields are blank for you to fill in by hand - that's
+   fine and expected. If you'd rather have the software try to read them
+   automatically off the PDF's cover page, you can additionally install a
+   free program called Tesseract-OCR:
+   - https://github.com/UB-Mannheim/tesseract/wiki
+     (download the tesseract-ocr-w64-setup-*.exe, run it, default options)
+   - Then add "C:\Program Files\Tesseract-OCR" to your Windows PATH
+     (Windows key -> search "environment variables" -> "Edit the system
+     environment variables" -> Environment Variables -> under "System
+     variables" select Path -> Edit -> New -> paste the folder above -> OK).
+   This step is entirely optional - skip it if you're happy typing those
+   fields in yourself.
+
+TROUBLE?
+   - "python is not recognized" or "py is not recognized": Python didn't
+     install correctly, or you need to open a brand-new black window after
+     installing it.
+   - "can't open file app.py": you're one folder level too high - type
+     "cd boq_generator" first, then try again.
+   - Anything else: ask whoever gave you this file.
