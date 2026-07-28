@@ -55,6 +55,51 @@ CALLOUT_RULES: dict[str, list[tuple[str, str]]] = {
     "3D LIT LOGO": [
         ("Signing", "Company logo will be 3D lit -- as per dimensions"),
     ],
+
+    # --- Vocabulary mined from other clients' spec decks (Ambadi Home and
+    # ~20 past Fountainhead project BOQs) -- generic reusable elements only,
+    # per the module design rule above. Mostly exists to lock in correct
+    # casing for acronyms/units (LED, MS, 3D) and to fix common OCR typos,
+    # since the generic fallback already gets plain labels right on its own.
+    "MS FRAME": [("Stand", "MS frame -- as per design")],
+    "LED LIGHT": [("Stand", "LED light -- as per design")],
+    "LED LIGHT WITH ALL SHLEF": [("Stand", "LED light with shelf -- as per design")],
+    "3D LETTER": [("Signing", "3D letter -- as per dimensions")],
+    "3D LIT INDIA MAP": [("Stand", "3D lit India map -- as per design")],
+    "VINYL CUT LOGO": [("Signing", "Vinyl cut logo -- as per dimensions")],
+    "VINYL CUT LETTER": [("Signing", "Vinyl cut letter -- as per dimensions")],
+    "LOGO VINYL CUT": [("Signing", "Logo vinyl cut -- as per dimensions")],
+    "CLINT PRODUCT RUG": [("Stand", "Client product rug -- as per design")],
+    "CLIENT PRODUCT RUG": [("Stand", "Client product rug -- as per design")],
+    "ALL CERIFICAT WALL": [("Stand", "Certificate wall -- as per design")],
+    "ALL CERTIFICATE WALL": [("Stand", "Certificate wall -- as per design")],
+    "WOODEN FLOORING": [("Stand", "Wooden flooring -- as per design")],
+    "WALLPAPER": [("Stand", "Wallpaper -- as per design")],
+    "PLANT POT": [("Stand", "Plant pot -- as per design")],
+    "WOODEN LOUVER": [("Stand", "Wooden louver -- as per design")],
+    "SKIRTING LIGHT": [("Stand", "Skirting light -- as per design")],
+    "RAMP": [("Stand", "Ramp -- as per design")],
+    "TRUSS": [("Stand", "Truss -- as per design")],
+    "FASCIA STRUCTURE": [("Stand", "Fascia structure -- as per design")],
+    "HANGING FASCIA": [("Stand", "Hanging fascia -- as per design")],
+    "SHELVES": [("Stand", "Shelves -- as per design")],
+    "WOODEN SHELVES DISPLAY STRUCTURE": [
+        ("Stand", "Wooden shelves display structure -- as per design"),
+    ],
+    "DISPLAY STRUCTURE": [("Stand", "Display structure -- as per design")],
+    "WOODEN PODIUM": [("Stand", "Wooden podium -- as per design")],
+    "INFO BOARD": [("Stand", "Info board -- as per design")],
+    "OPEN SITTING AREA": [("Stand", "Open sitting area -- as per design")],
+    "OPEN DISCUSSION AREA": [("Stand", "Open discussion area -- as per design")],
+    "SOFA SITTING AREA": [("Stand", "Sofa sitting area -- as per design")],
+    "BAR SEATING AREA": [("Stand", "Bar seating area -- as per design")],
+    "SEMI CLOSED MEETING AREA": [("Stand", "Semi closed meeting area -- as per design")],
+    "LOCKABLE RECEPTION DESK": [("Stand", "Lockable reception desk -- as per design")],
+    "LOCKABLE RECEPTION COUNTER": [("Stand", "Lockable reception counter -- as per design")],
+    "RUNNER PLANTER BOX": [("Stand", "Runner planter box -- as per design")],
+    "L-SHAPED PLANTER BOX": [("Stand", "L-shaped planter box -- as per design")],
+    "PLANTER BOX": [("Stand", "Planter box -- as per design")],
+    "PLANTER WALL": [("Stand", "Planter wall -- as per design")],
 }
 
 # canonical room name (from extract.ROOM_KEYWORDS) -> (section, phrase, qty)

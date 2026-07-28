@@ -233,11 +233,8 @@ class SpecExtractor:
                     sections.setdefault(current, [])
         return sections, page
 
-    def parse_callouts(self) -> tuple[list, int | None]:
-        page = self.find_callouts_page()
-        if not page:
-            return [], None
-        text = self._page_text_sorted(page)
+    @staticmethod
+    def _labels_from_text(text: str) -> list[str]:
         labels = []
         for raw_line in text.splitlines():
             line = re.sub(r"\s+", " ", raw_line).strip()
@@ -264,7 +261,31 @@ class SpecExtractor:
             if len(line) > 45:
                 continue
             labels.append(line)
-        return labels, page
+        return labels
+
+    def parse_callouts(self) -> tuple[list, int | None]:
+        page = self.find_callouts_page()
+        if page:
+            return self._labels_from_text(self._page_text_sorted(page)), page
+
+        # Some decks (e.g. a 3D render exported with label callouts drawn
+        # directly onto the image) have no text layer at all for this page
+        # -- find_callouts_page() can't see it via text search. OCR each
+        # remaining page and keep whichever one both carries the
+        # "Specifications" heading and yields a plausible batch of labels.
+        from boq.ocr_cover import ocr_page_text  # local import: optional dependency
+        reserved = {p for p in (self.find_specs_page(), self.find_floorplan_page()) if p}
+        for i in range(len(self.doc)):
+            page_no = i + 1
+            if page_no in reserved or page_no == 1:
+                continue
+            text = ocr_page_text(self.pdf_path, page_no)
+            if "specification" not in text.lower():
+                continue
+            labels = self._labels_from_text(text)
+            if len(labels) >= 5:
+                return labels, page_no
+        return [], None
 
     def parse_rooms(self) -> tuple[dict, int | None]:
         page = self.find_floorplan_page()

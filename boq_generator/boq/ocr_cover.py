@@ -140,6 +140,29 @@ def _parse_banner_text(text: str) -> tuple[str, str, str]:
     return trade_show, city, dates
 
 
+def ocr_page_text(pdf_path: str, page_no: int, dpi: int = 200) -> str:
+    """Full-page OCR text, for a page where the content -- e.g. an
+    exploded-view "Specifications" callout page -- is one flattened image
+    with no text layer at all. Best-effort: returns "" if OCR isn't
+    available or rendering/OCR fails, so callers should treat this as an
+    optional fallback on top of real text extraction, not a required step.
+    """
+    if not ocr_available():
+        return ""
+    try:
+        doc = fitz.open(pdf_path)
+        page_no = max(1, min(page_no, len(doc)))
+        pix = doc[page_no - 1].get_pixmap(dpi=dpi)
+        doc.close()
+        img = Image.frombytes("RGB", (pix.width, pix.height), pix.samples)
+    except Exception:  # noqa: BLE001
+        return ""
+    try:
+        return pytesseract.image_to_string(img)
+    except Exception:  # noqa: BLE001
+        return ""
+
+
 def ocr_dimensions_fallback(pdf_path: str, page_no: int = 2, dpi: int = 200) -> dict:
     """Some decks bake the STAND SIZE/AREA/WALL HEIGHT/TOTAL HEIGHT footer
     into a flattened image rather than real text (no page in the PDF has it
