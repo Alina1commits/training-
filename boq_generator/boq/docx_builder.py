@@ -26,18 +26,6 @@ ACCENT_BLUE = "0070C0"  # matches BOQ_expected.docx's title/heading color exactl
 LETTERHEAD_BG = Path(__file__).resolve().parent / "assets" / "letterhead_bg.png"
 
 
-def _set_cell_borders(cell, sz="4", color="999999"):
-    tcPr = cell._tc.get_or_add_tcPr()
-    borders = OxmlElement("w:tcBorders")
-    for edge in ("top", "left", "bottom", "right"):
-        el = OxmlElement(f"w:{edge}")
-        el.set(qn("w:val"), "single")
-        el.set(qn("w:sz"), sz)
-        el.set(qn("w:color"), color)
-        borders.append(el)
-    tcPr.append(borders)
-
-
 def _bold_run(paragraph, text, size=11, color=None):
     run = paragraph.add_run(text)
     run.bold = True
@@ -146,39 +134,30 @@ def _add_bullets(doc, bullets: list[str], size=10):
         run.font.size = Pt(size)
 
 
-def _add_specs_table(doc, sections: dict[str, list[dict]]):
-    table = doc.add_table(rows=0, cols=2)
-    table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    table.autofit = False
-    qty_width, desc_width = Cm(2.2), Cm(14.0)
+TAB_STOP = Cm(2.2)
 
+
+def _add_specifications(doc, sections: dict[str, list[dict]]):
+    """Plain paragraphs, not a table -- matches BOQ_expected.docx exactly:
+    a bold section-name line, then one paragraph per item with the quantity
+    and description separated by a tab, using a hanging indent so wrapped
+    lines fall under the description rather than back at the margin.
+    """
     for section_name in SECTION_ORDER:
-        header_row = table.add_row()
-        header_row.cells[0].merge(header_row.cells[1])
-        p = header_row.cells[0].paragraphs[0]
-        _bold_run(p, section_name, size=11)
-        for c in header_row.cells:
-            _set_cell_borders(c)
+        heading = doc.add_paragraph()
+        _bold_run(heading, section_name, size=11)
 
         items = sections.get(section_name, [])
-        if not items:
-            row = table.add_row()
-            row.cells[0].width = qty_width
-            row.cells[1].width = desc_width
-            for c in row.cells:
-                _set_cell_borders(c)
-            continue
-
         for item in items:
-            row = table.add_row()
-            qty_cell, desc_cell = row.cells[0], row.cells[1]
-            qty_cell.width = qty_width
-            desc_cell.width = desc_width
-            qty_cell.paragraphs[0].add_run(str(item.get("qty", ""))).font.size = Pt(10)
-            desc_cell.paragraphs[0].add_run(str(item.get("description", ""))).font.size = Pt(10)
-            for c in row.cells:
-                _set_cell_borders(c)
-    return table
+            p = doc.add_paragraph()
+            pf = p.paragraph_format
+            pf.left_indent = TAB_STOP
+            pf.first_line_indent = -TAB_STOP
+            pf.tab_stops.add_tab_stop(TAB_STOP)
+            run = p.add_run(f"{item.get('qty', '')}\t{item.get('description', '')}")
+            run.font.size = Pt(10)
+
+        doc.add_paragraph()
 
 
 def build_boq_docx(
@@ -221,7 +200,7 @@ def build_boq_docx(
     run = _bold_run(spec_heading, "Specifications", size=13, color=ACCENT_BLUE)
     run.underline = True
 
-    _add_specs_table(doc, sections)
+    _add_specifications(doc, sections)
 
     doc.add_paragraph()
     _add_bullets(doc, legal_text.schedule_bullets(show_start))
