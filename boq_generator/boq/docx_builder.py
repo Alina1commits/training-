@@ -206,7 +206,7 @@ def build_boq_docx(
     doc.add_paragraph()
 
     title = doc.add_paragraph()
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title.alignment = WD_ALIGN_PARAGRAPH.LEFT
     area = header_fields.get("area", "")
     trade_show = header_fields.get("trade_show", "")
     venue = header_fields.get("venue", "")
