@@ -35,17 +35,33 @@ def _bold_run(paragraph, text, size=11, color=None):
     return run
 
 
-def _add_page_background(doc, image_path: Path):
-    """Repeat the Fountainhead letterhead graphic at the bottom of every
-    page: added to the header as a floating picture, anchored to the page,
-    positioned behind the text so it never displaces content.
+def _add_letterhead(doc, image_path: Path, header_lines: list[str]):
+    """Fountainhead's two-part letterhead, repeated on every page: the
+    company info block (name/address/registration/contact) as ordinary
+    header text at the top, and the triangle graphic as a floating picture
+    anchored to the bottom of the page, positioned behind the text so it
+    never displaces content.
     """
-    if not image_path.exists():
-        return
     section = doc.sections[0]
     header = section.header
     header.is_linked_to_previous = False
-    paragraph = header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+
+    for idx, line in enumerate(header_lines):
+        p = header.paragraphs[0] if idx == 0 else header.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run(line)
+        run.font.color.rgb = RGBColor.from_string("595959")
+        if idx == 0:
+            run.font.size = Pt(9)
+            run.bold = True
+        else:
+            run.font.size = Pt(8)
+
+    if not image_path.exists():
+        return
+    paragraph = header.add_paragraph() if header_lines else (
+        header.paragraphs[0] if header.paragraphs else header.add_paragraph()
+    )
     run = paragraph.add_run()
     run.add_picture(str(image_path), width=section.page_width)
 
@@ -179,7 +195,7 @@ def build_boq_docx(
     style.font.name = "Calibri"
     style.font.size = Pt(10)
 
-    _add_page_background(doc, LETTERHEAD_BG)
+    _add_letterhead(doc, LETTERHEAD_BG, legal_text.COMPANY_HEADER_LINES)
 
     _add_header_field_table(doc, header_fields)
     doc.add_paragraph()

@@ -21,6 +21,17 @@ PRODUCTION_START_OFFSET_DAYS = 57
 HANDOVER_OFFSET_DAYS = 1
 HANDOVER_TIME = "6 pm"
 
+# Company info block shown at the top of every page (the letterhead's
+# "header" half -- the triangle graphic in docx_builder is the "footer"
+# half). Reproduced verbatim from the reference BOQ.
+COMPANY_HEADER_LINES = [
+    "FOUNTAINHEAD INTERNATIONAL B.V.",
+    "Keurmeesterstraat 33, Amstelveen, 1187 ZX, The Netherlands.",
+    "Registration Number: 000035338857",
+    "info@fountainheadint.nl",
+    "+31 858 886 475, +31 619 313 163, +31 208 943 163",
+]
+
 
 def _ordinal(n: int) -> str:
     if 11 <= (n % 100) <= 13:
