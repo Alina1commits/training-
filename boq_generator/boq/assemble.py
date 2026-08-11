@@ -43,7 +43,10 @@ def build_sections(extraction: ExtractionResult, ai_suggestions: dict | None = N
     deterministic = build_deterministic_lines(extraction)
     ai_suggestions = ai_suggestions or {}
 
-    key_by_short = {"Floor": "1 Floor", "Stand": "2 Stand", "Signing": "6 Signing"}
+    key_by_short = {
+        "Floor": "1 Floor", "Stand": "2 Stand", "Signing": "6 Signing",
+        "AV/VIDEO": "8 AV/VIDEO",
+    }
     for short, key in key_by_short.items():
         for item in deterministic.get(short, []):
             sections[key].append({"qty": item["qty"], "description": item["description"]})

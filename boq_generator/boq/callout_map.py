@@ -25,7 +25,7 @@ CALLOUT_RULES: dict[str, list[tuple[str, str]]] = {
         ("Floor", "48mm raised platform with dual laminate with LED strip -- as per design"),
     ],
     "LEDHOLO SCREEN WALL": [
-        ("Stand", "LEDholo screen wall -- as per design"),
+        ("AV/VIDEO", "LEDholo screen wall -- as per design"),
     ],
     "WOODEN IPAD STAND": [
         ("Stand", "Wooden iPad stand -- as per design"),
@@ -118,6 +118,13 @@ ROOM_LINE_RULES: dict[str, tuple[str, str]] = {
 # short, high-precision list -- when in doubt, Stand is the safer default.
 _SIGNING_KEYWORDS = ("vinyl", "logo", "letter", "graphic", "backlit", "print")
 
+# Screen/video hardware belongs in AV/VIDEO only -- it must never also show
+# up as a Stand build item or a Signing line, since that duplicates the same
+# physical screen under two section headings and confuses client/vendor.
+# Deliberately excludes bare "led" (e.g. "LED LIGHT" is a lighting fixture,
+# not a screen) -- only fires when the label actually names a video device.
+_AV_KEYWORDS = ("screen", "tv", "video", "monitor", "projector")
+
 
 def _normalize_label(label: str) -> str:
     label = label.strip()
@@ -129,7 +136,10 @@ def _generic_fallback_line(label: str) -> tuple[str, str]:
     whose design vocabulary doesn't match Milan's -- still produce a
     reasonable line instead of silently dropping it.
     """
-    is_signing = any(kw in label.lower() for kw in _SIGNING_KEYWORDS)
+    lowered = label.lower()
+    if any(kw in lowered for kw in _AV_KEYWORDS):
+        return "AV/VIDEO", f"{_normalize_label(label)} -- as per design"
+    is_signing = any(kw in lowered for kw in _SIGNING_KEYWORDS)
     section = "Signing" if is_signing else "Stand"
     suffix = "as per dimensions" if is_signing else "as per design"
     return section, f"{_normalize_label(label)} -- {suffix}"
@@ -149,7 +159,7 @@ def _meeting_room_qty(rooms: dict) -> int:
 def build_deterministic_lines(extraction: ExtractionResult) -> dict[str, list[dict]]:
     """Returns {section: [{"qty": str, "description": str, "source": str}]}"""
     sections: dict[str, list[dict]] = {
-        "Floor": [], "Stand": [], "Signing": [],
+        "Floor": [], "Stand": [], "Signing": [], "AV/VIDEO": [],
     }
 
     def add(section: str, qty: str, description: str, source: str):
